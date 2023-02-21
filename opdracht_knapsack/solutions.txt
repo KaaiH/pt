@@ -1,0 +1,15 @@
+points:278
+item10
+item3
+item8
+item16
+item7
+item5
+item14
+item11
+item18
+item13
+item9
+item12
+item6
+item15
