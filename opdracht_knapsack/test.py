@@ -23,7 +23,6 @@ def load_knapsack(knapsack_file):
 
 
 def random_solver(knapsack, items):
-
     index = list(range(len(items)))
     random.shuffle(index)
     while(knapsack.add(items[index.pop(0)])):
@@ -32,69 +31,145 @@ def random_solver(knapsack, items):
 
 
 def solver_optimal_recursive(knapsack, items):
-    stack = copy.deepcopy(items)
-    # list of items in the current branch
-    stack = []
-    index = 0
-    start = 0
+    index = list(range(len(items)))
+    stack = list()
     points = 0
     most_points = 0
-    count = 0
-    index = list(range(len(items)))
-    branch = []
-
-    def recursive_dfs(index, items, knapsack):
-        nonlocal points
-        nonlocal most_points
-        nonlocal branch
-
-        if len(index) == 0:
-            branch.pop
+    def recursive(knapsack, items, stack, index, points):
+        if not index:
             return
 
-        current_index = index.pop()
-        recursive_dfs(index, items, knapsack)
-
-        item = items[current_index]
-        if knapsack.test_add(item):
-            branch.append(current_index)
-            points += item.get_points()
+        nonlocal most_points
+        current = index.pop()
+        print(stack)
+        recursive(knapsack, items, stack[:], index[:], points)
+        # returns always true
+        if knapsack.test_add(items[current]):
+            points += items[current].get_points()
+            print(stack, points)
             if points > most_points:
                 most_points = points
-            recursive_dfs(index, items, knapsack)
 
 
-        # if knapsack.add(items[current_index]):
-        #     print("true")
-        #     if knapsack.get_points() > best_score:
-        #         best_score = knapsack.get_points()
-        #         print("best score:" + str(best_score))
-        #     recursive_dfs(index, items, knapsack)
-        # else:
-        #     knapsack.pop
-        #     return
 
-    recursive_dfs(index, items, knapsack)
+
+            stack.append(current)
+            recursive(knapsack, items, stack[:], index[:], points)
+
+
+    recursive(knapsack, items, stack, index, 0)
     print(most_points)
-    return most_points
 
 
-
-
-
-
-
-knapsack_file = 'knapsack_medium.csv'
-# knapsack_file = 'knapsack_small.csv'
+# knapsack_file = 'knapsack_medium.csv'
+knapsack_file = 'knapsack_small.csv'
 knapsack, items = load_knapsack(knapsack_file)
 
 solver_optimal_recursive(knapsack, items)
 
-solution_file = "solutions.txt"
-solver = Solver(random_solver)
+# solver_optimal_recursive(knapsack, items)
 
 
-solver.solve(knapsack, items)
-best_knapsack = solver.get_best_knapsack()
 
-best_knapsack.save(solution_file)
+
+
+
+
+# def solver_optimal_recursive(knapsack, items):
+#     index = list(range(len(items)))
+#     print(index)
+#     branch = []
+#     best_branch = []
+#     most_points = 0
+#     points = 0
+#     def recursive_dfs(knapsack, items, index, branch, best_branch, points):
+#         nonlocal most_points
+#         if not index:
+#             return
+#         current_index = index.pop()
+#         recursive_dfs(knapsack, items, index[:], branch, best_branch, points)
+#         item = items[current_index]
+#         if knapsack.test_add(item):
+#             points += item.get_points()
+#             branch.append(current_index)
+#             if points > most_points:
+#                 most_points = points
+#                 best_branch = branch[:]
+#             recursive_dfs(knapsack, items, index[:], branch[:], best_branch, points)
+
+#         # return most_points
+#     recursive_dfs(knapsack, items, index, branch, best_branch, points)
+#     print(most_points)
+
+
+
+# def solver_optimal_recursive(knapsack, items):
+#     stack = copy.deepcopy(items)
+#     # list of items in the current branch
+#     best_branch = []
+#     index = 0
+#     start = 0
+#     points = 0
+#     most_points = 0
+
+#     index = list(range(len(items)))
+#     branch = []
+
+#     def recursive_dfs(index, items, knapsack):
+#         nonlocal points
+#         nonlocal most_points
+#         nonlocal branch
+#         nonlocal best_branch
+
+#         if len(index) == 0:
+#             branch.pop
+#             return#         item = items[current_index]
+#         if knapsack.test_add(item):
+#             branch.append(current_index)
+#             print(branch)
+#             points += item.get_points()
+#             if points > most_points:
+#                 most_points = points
+#                 best_branch = branch[:]
+
+#             recursive_dfs(index, items, knapsack)
+
+
+#         current_index = index.pop()
+#         recursive_dfs(index, items, knapsack)
+
+        # item = items[current_index]
+        # if knapsack.test_add(item):
+        #     branch.append(current_index)
+        #     # print(branch)
+        #     points += item.get_points()
+        #     if points > most_points:
+        #         most_points = points
+        #         best_branch = branch[:]
+
+        #     recursive_dfs(index, items, knapsack)
+
+
+#     recursive_dfs(index, items, knapsack)
+#     print(most_points)
+#     for i in best_branch:
+#         print(items[i].name)
+#         knapsack.add(items[i])
+
+#     return knapsack
+
+
+
+
+
+
+
+
+# solution_file = "solutions.txt"
+# solver = Solver(random_solver)
+# # solver = Solver(solver_optimal_recursive)
+
+# solver.solve(knapsack, items)
+# best_knapsack = solver.get_best_knapsack()
+
+# best_knapsack.save(solution_file)

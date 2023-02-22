@@ -62,7 +62,7 @@ class Knapsack(Item):
 
 class Solver:
     knapsack = None
-    iterations = 3
+    iterations = 1
 
 
     def __init__(self, alg):
