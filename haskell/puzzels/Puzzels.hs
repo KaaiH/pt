@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use map" #-}
+{-# HLINT ignore "Use or" #-}
 module Puzzels where
 
 length' :: [a] -> Integer

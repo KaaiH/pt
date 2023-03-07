@@ -23,45 +23,64 @@ centerOfBlocks :: [Int]
 centerOfBlocks = [2, 5, 8]
 
 getRow ::  Sudoku -> Row -> [Value]
-getRow s r = [s (r, c) | c <- values]
+getRow sud r = [sud (r, c) | c <- positions]
 
 freeInRow :: Sudoku -> Row -> [Value]
-freeInRow s r = values \\ getRow s r
+freeInRow sud r = values \\ getRow sud r
 
 getCol :: Sudoku -> Column -> [Value]
-getCol s c = [s (r, c) | r <- values]
+getCol sud c = [sud (r, c) | r <- positions]
 
 freeInCol :: Sudoku -> Column -> [Value]
-freeInCol s c = values \\ getCol s c
+freeInCol sud c = values \\ getCol sud c
 
 getCenter :: Value -> [Value]
 getCenter n
-   |  n `elem` [1..3] = [2]
-   |  n `elem` [4..6] = [5]
-   |  n `elem` [7..9] = [8]
-
+   | n <= 3 = [2]
+   | n <= 6 = [5]
+   | n <= 9 = [8]
 
 getSubgrid :: Sudoku -> (Row, Column) -> [Value]
-getSubgrid s (r, c) = [s (a + i, b + j) |a <- getCenter r, b <- getCenter c, i <- [-1..1], j <- [-1..1]]
+getSubgrid sud (r, c) = [sud (a + i, b + j) |a <- getCenter r, b <- getCenter c, i <- [-1..1], j <- [-1..1]]
 
 freeInSubgrid :: Sudoku -> (Row, Column) -> [Value]
-freeInSubgrid s (r, c) = values \\ getSubgrid s (r, c)
+freeInSubgrid sud (r, c) = values \\ getSubgrid sud (r, c)
 
 
 openPositions :: Sudoku -> [(Row, Column)]
-openPositions s = [(r, c) | r <- values, c <- values, s (r, c) == 0]
+openPositions sud = [(r, c) | r <- positions, c <- positions, sud (r, c) == 0]
 
 rowValid :: Sudoku -> Row -> Bool
-rowValid s r = length (getRow s r) == 9 && null (values \\ getRow s r)
+rowValid sud r = length (getRow sud r) == 9 && null (values \\ getRow sud r)
 
 colValid :: Sudoku -> Column -> Bool
-colValid s r = length (getCol s r) == 9 && null (values \\ getCol s r)
+colValid sud r = length (getCol sud r) == 9 && null (values \\ getCol sud r)
 
 subgridValid :: Sudoku -> (Row, Column) -> Bool
-subgridValid s (r, c) = length (getSubgrid s (r, c)) == 9 && null (values \\ getSubgrid s (r, c))
+subgridValid sud (r, c) = length (getSubgrid sud (r, c)) == 9 && null (values \\ getSubgrid sud (r, c))
 
 consistent :: Sudoku -> Bool
-consistent s = and [rowValid s r | r <- values] && and [colValid s c | c <- values] && and [subgridValid s (r, c) | r <- centerOfBlocks, c <- centerOfBlocks]
+consistent sud = and [rowValid sud r | r <- positions] && and [colValid sud c | c <- positions] && and [subgridValid sud (r, c) | r <- centerOfBlocks, c <- centerOfBlocks]
+
+constraint :: Sudoku -> (Row, Column) -> Constraint
+constraint sud (r, c) = (r, c, [v | v <- values, v `elem` freeInRow sud r, v `elem` freeInCol sud c, v `elem` freeInSubgrid sud (r, c)])
+
+-- constraints sud = [constraint sud (r, c)| r <- positions, c <- positions]
+constraints :: Sudoku -> [Constraint]
+constraints sud = sortBy (\(_,_,a) (_,_,b) -> compare a b) [constraint sud (r, c)| (r, c) <- openPositions sud]
+
+-- solve :: Sudoku -> Sudoku
+-- sudSet sud (r, c, [v]) = sud (r, c)
+-- if consistent sud 
+--    tada oplossing gevonden
+-- else if constraints == []
+--    geen oplossing
+-- else 
+--    maak een node waar de waardes worden toegevoegd. 
+
+-- if constraints sud == [] && consistent sud == False
+--    geen oplossing
+-- else if con
 
 
 
@@ -74,9 +93,12 @@ consistent s = and [rowValid s r | r <- values] && and [colValid s c | c <- valu
 
 
 
+
+printNode :: Node -> IO()
+printNode = printSudoku . fst
 
 sud2grid :: Sudoku -> Grid
-sud2grid s = [[s (r, c) | c <- positions] | r <- positions]
+sud2grid sud = [[sud (r, c) | c <- positions] | r <- positions]
 
 grid2sud :: Grid -> Sudoku
 grid2sud gr = \(r, c) -> pos gr (r, c)
