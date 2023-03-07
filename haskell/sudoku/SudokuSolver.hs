@@ -1,5 +1,6 @@
 import System.Environment
 import Data.List
+import Distribution.Utils.Structured (Structure)
 
 type Row = Int
 type Column = Int
@@ -20,6 +21,59 @@ blocks = [[1..3],[4..6],[7..9]]
 
 centerOfBlocks :: [Int]
 centerOfBlocks = [2, 5, 8]
+
+getRow ::  Sudoku -> Row -> [Value]
+getRow s r = [s (r, c) | c <- values]
+
+freeInRow :: Sudoku -> Row -> [Value]
+freeInRow s r = values \\ getRow s r
+
+getCol :: Sudoku -> Column -> [Value]
+getCol s c = [s (r, c) | r <- values]
+
+freeInCol :: Sudoku -> Column -> [Value]
+freeInCol s c = values \\ getCol s c
+
+getCenter :: Value -> [Value]
+getCenter n
+   |  n `elem` [1..3] = [2]
+   |  n `elem` [4..6] = [5]
+   |  n `elem` [7..9] = [8]
+
+
+getSubgrid :: Sudoku -> (Row, Column) -> [Value]
+getSubgrid s (r, c) = [s (a + i, b + j) |a <- getCenter r, b <- getCenter c, i <- [-1..1], j <- [-1..1]]
+
+freeInSubgrid :: Sudoku -> (Row, Column) -> [Value]
+freeInSubgrid s (r, c) = values \\ getSubgrid s (r, c)
+
+
+openPositions :: Sudoku -> [(Row, Column)]
+openPositions s = [(r, c) | r <- values, c <- values, s (r, c) == 0]
+
+rowValid :: Sudoku -> Row -> Bool
+rowValid s r = length (getRow s r) == 9 && null (values \\ getRow s r)
+
+colValid :: Sudoku -> Column -> Bool
+colValid s r = length (getCol s r) == 9 && null (values \\ getCol s r)
+
+subgridValid :: Sudoku -> (Row, Column) -> Bool
+subgridValid s (r, c) = length (getSubgrid s (r, c)) == 9 && null (values \\ getSubgrid s (r, c))
+
+consistent :: Sudoku -> Bool
+consistent s = and [rowValid s r | r <- values] && and [colValid s c | c <- values] && and [subgridValid s (r, c) | r <- centerOfBlocks, c <- centerOfBlocks]
+
+
+
+
+
+
+
+
+
+
+
+
 
 sud2grid :: Sudoku -> Grid
 sud2grid s = [[s (r, c) | c <- positions] | r <- positions]

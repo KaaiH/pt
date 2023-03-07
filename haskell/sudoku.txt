@@ -1,0 +1,1 @@
+sud <- readSudoku "sudoku_boards/hard_sudoku_1.txt"
