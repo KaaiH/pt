@@ -62,28 +62,42 @@ subgridValid sud (r, c) = length (getSubgrid sud (r, c)) == 9 && null (values \\
 consistent :: Sudoku -> Bool
 consistent sud = and [rowValid sud r | r <- positions] && and [colValid sud c | c <- positions] && and [subgridValid sud (r, c) | r <- centerOfBlocks, c <- centerOfBlocks]
 
+rowLegal :: Sudoku -> Row -> Bool
+rowLegal sud r = length (values \\ getRow sud r) == 9 - length (getRow sud r)
+
+colLegal :: Sudoku -> Column -> Bool
+colLegal sud c = length (values \\ getCol sud c) == 9 - length (getCol sud c)
+
+subgridLegal :: Sudoku -> (Row, Column) -> Bool
+subgridLegal sud (r, c) = length (values \\ getSubgrid sud (r, c)) == 9 - length (getSubgrid sud (r, c))
+
+legal :: Sudoku -> Bool
+legal sud = and [rowLegal sud r | r <- positions] && and [colLegal sud c | c <- positions] && and [subgridLegal sud (r, c) | r <- centerOfBlocks, c <- centerOfBlocks]
+-- legal sud = and [rowLegal sud r | r <- positions] && and
+
 constraint :: Sudoku -> (Row, Column) -> Constraint
 constraint sud (r, c) = (r, c, [v | v <- values, v `elem` freeInRow sud r, v `elem` freeInCol sud c, v `elem` freeInSubgrid sud (r, c)])
 
 -- constraints sud = [constraint sud (r, c)| r <- positions, c <- positions]
+-- sort on
+-- sortOn(\_, _ , a -> length a
 constraints :: Sudoku -> [Constraint]
-constraints sud = sortBy (\(_,_,a) (_,_,b) -> compare a b) [constraint sud (r, c)| (r, c) <- openPositions sud]
-
--- solve :: Sudoku -> Sudoku
--- sudSet sud (r, c, [v]) = sud (r, c)
--- if consistent sud 
---    tada oplossing gevonden
--- else if constraints == []
---    geen oplossing
--- else 
---    maak een node waar de waardes worden toegevoegd. 
-
--- if constraints sud == [] && consistent sud == False
---    geen oplossing
--- else if con
+-- constraints sud = sortBy (\(_,_,a) (_,_,b) -> compare a b) [constraint sud (r, c)| (r, c) <- openPositions sud]
+constraints sud = sortOn (\(_, _ , a) -> length a) [constraint sud (r, c)| (r, c) <- openPositions sud]
 
 
+solver :: Node -> Node
+-- solver node = extend (fst node) (head (snd node))
+-- solver node = extend head [sud (r, c, v) |]
+-- solver node = extend (fst node) (head [(a, b, head c) |(a, b, c) <- snd node])
+solver node = if null (snd node) then node else let modsud = extend (fst node) (head [(a, b, head c) |(a, b, c) <- snd node]) in solver (modsud, constraints modsud)
 
+
+-- solver node = 
+--    let modsud = extend (fst node) (head [(a, b, head c) |(a, b, c) <- snd node])
+--    solver (modsud, constraints modsud)
+--  (solver modsud (constraints modsud))
+-- :xs, head, concat, modsud, constraints
 
 
 
